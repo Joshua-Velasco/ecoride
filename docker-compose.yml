@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  identity-service:
+    build: ./services/identity
+    ports:
+      - "3001:3000"
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ecoride-network
+
+  unlock-service:
+    build: ./services/unlock
+    ports:
+      - "3002:3000"
+    environment:
+      - DB_HOST=postgres
+      - RESPONSE_DELAY=100
+    depends_on:
+      - postgres
+    networks:
+      - ecoride-network
+
+  telemetry-service:
+    build: ./services/telemetry
+    ports:
+      - "3003:3000"
+    environment:
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+    networks:
+      - ecoride-network
+
+  payment-service:
+    build: ./services/payment
+    ports:
+      - "3004:3000"
+    environment:
+      - DB_HOST=postgres
+      - STRIPE_SECRET_KEY=sk_test_PLACEHOLDER
+    depends_on:
+      - postgres
+    networks:
+      - ecoride-network
+
+  gateway:
+    image: nginx:alpine
+    ports:
+      - "30000:80"
+    volumes:
+      - ./services/gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - payment-service
+      - unlock-service
+      - telemetry-service
+      - identity-service
+    networks:
+      - ecoride-network
+
+  frontend:
+    build: ./services/frontend
+    ports:
+      - "3000:80"
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:3000
+    depends_on:
+      - payment-service
+      - unlock-service
+      - telemetry-service
+    networks:
+      - ecoride-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ecoride
+      POSTGRES_PASSWORD: demo123
+      POSTGRES_USER: ecoride
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - ecoride-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - ecoride-network
+
+volumes:
+  postgres_data:
+
+networks:
+  ecoride-network:
+    driver: bridge

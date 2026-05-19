@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetry-processor-deployment
+  namespace: data-pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telemetry-processor
+  template:
+    metadata:
+      labels:
+        app: telemetry-processor
+    spec:
+      containers:
+      - name: telemetry-processor
+        image: ecoride/telemetry-processor:latest
+        imagePullPolicy: Never # Usa la imagen local que acabamos de compilar
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "250m"

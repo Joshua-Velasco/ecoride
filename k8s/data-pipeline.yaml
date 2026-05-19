@@ -1,0 +1,205 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: data-pipeline
+---
+# 1. EL BROKER MQTT (EMQX) - Ingesta de Telemetría de Scooters
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emqx-deployment
+  namespace: data-pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emqx
+  template:
+    metadata:
+      labels:
+        app: emqx
+    spec:
+      containers:
+      - name: emqx
+        image: emqx/emqx:5.3.2
+        ports:
+        - containerPort: 1883 # Puerto MQTT para los scooters
+        - containerPort: 18083 # Puerto del Dashboard de EMQX
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: emqx-service
+  namespace: data-pipeline
+spec:
+  type: LoadBalancer
+  ports:
+  - name: mqtt
+    port: 1883
+    targetPort: 1883
+  - name: dashboard
+    port: 18083
+    targetPort: 18083
+  selector:
+    app: emqx
+---
+# 2. MENSAJERÍA Y EVENTOS (Apache Kafka + Zookeeper simplificado)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-deployment
+  namespace: data-pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: ubuntu/kafka:3.1-22.04_beta
+        args:
+        - "/etc/kafka/server.properties"
+        - "--override"
+        - "advertised.listeners=PLAINTEXT://kafka-service.data-pipeline.svc.cluster.local:9092"
+        - "--override"
+        - "listeners=PLAINTEXT://0.0.0.0:9092"
+        env:
+        - name: ZOOKEEPER_CONNECT
+          value: "127.0.0.1:2181"
+        - name: ZOOKEEPER_HOST
+          value: "127.0.0.1"
+        - name: LISTENERS
+          value: "PLAINTEXT://0.0.0.0:9092"
+        - name: ADVERTISED_LISTENERS
+          value: "PLAINTEXT://kafka-service.data-pipeline.svc.cluster.local:9092"
+      - name: zookeeper
+        image: zookeeper:3.9.2
+        ports:
+        - containerPort: 2181
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: data-pipeline
+spec:
+  ports:
+  - port: 9092
+    targetPort: 9092
+  selector:
+    app: kafka
+---
+# 3. ALMACENAMIENTO DE DATOS - Base de Datos Relacional (PostgreSQL)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  namespace: data-pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: POSTGRES_DB
+          value: "ecoride_db"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "password123"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: init-sql-volume
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: init-sql-volume
+        configMap:
+          name: postgres-init-sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: data-pipeline
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: postgres
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-sql
+  namespace: data-pipeline
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(50) NOT NULL UNIQUE,
+      email VARCHAR(100) NOT NULL UNIQUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS scooters (
+      id SERIAL PRIMARY KEY,
+      battery_level INTEGER,
+      location_lat FLOAT,
+      location_lng FLOAT,
+      status VARCHAR(50),
+      last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS trips (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      scooter_id INTEGER NOT NULL REFERENCES scooters(id),
+      status VARCHAR(50),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      ended_at TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS payments (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      amount DECIMAL(10, 2),
+      status VARCHAR(50),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    INSERT INTO users (username, email) VALUES 
+      ('user1', 'user1@ecoride.com'),
+      ('user2', 'user2@ecoride.com'),
+      ('user3', 'user3@ecoride.com')
+    ON CONFLICT DO NOTHING;
+
+    INSERT INTO scooters (battery_level, location_lat, location_lng, status) VALUES 
+      (85, 19.4330, -99.1332, 'AVAILABLE'),
+      (65, 19.4340, -99.1340, 'AVAILABLE'),
+      (92, 19.4320, -99.1320, 'AVAILABLE'),
+      (45, 19.4350, -99.1350, 'AVAILABLE')
+    ON CONFLICT DO NOTHING;
+
+    CREATE TABLE IF NOT EXISTS telemetry (
+        id SERIAL PRIMARY KEY,
+        scooter_id VARCHAR(50) NOT NULL,
+        latitude NUMERIC(10, 7) NOT NULL,
+        longitude NUMERIC(10, 7) NOT NULL,
+        battery INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );

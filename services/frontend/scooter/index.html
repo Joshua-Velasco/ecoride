@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>EcoRide | Scooter</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Estilos para el Login de Demostración */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(8px);
+        }
+        .login-box {
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            color: #1e293b;
+        }
+        .login-box h2 {
+            margin-bottom: 0.5rem;
+            color: #0f172a;
+        }
+        .login-box p {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+        .btn-google:hover {
+            background: #f9fafb;
+            border-color: #c5cdd7;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        .user-badge {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .user-badge img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 2px solid #10b981;
+        }
+        .btn-logout {
+            background: none;
+            border: none;
+            color: #f87171;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 0.8rem;
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        const scooterData = {
+            '1': {
+                model: 'EcoRide S7',
+                status: 'Disponible',
+                battery: '84%',
+                location: 'Av. Reforma 1024, CDMX',
+                speed: '24 km/h',
+                lastRidden: 'Hace 12 minutos',
+                tripCount: 28,
+                tariff: '$0.18/min',
+                condition: 'Listo para uso'
+            },
+            '2': {
+                model: 'EcoRide X2',
+                status: 'En mantenimiento',
+                battery: '59%',
+                location: 'Calle Mayor 32, CDMX',
+                speed: '22 km/h',
+                lastRidden: 'Hace 43 minutos',
+                tripCount: 14,
+                tariff: '$0.20/min',
+                condition: 'Frenos revisados'
+            }
+        };
+
+        // Verificar sesión al cargar
+        function checkAuth() {
+            const user = localStorage.getItem('ecoride_user');
+            const overlay = document.getElementById('auth-overlay');
+            const userContainer = document.getElementById('user-nav-container');
+
+            if (user) {
+                // Usuario autenticado
+                overlay.style.display = 'none';
+                const userData = JSON.parse(user);
+                userContainer.innerHTML = `
+                    <div class="user-badge">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=10b981&color=fff" alt="Avatar">
+                        <span>${userData.name}</span>
+                        <button class="btn-logout" onclick="logout()">Salir</button>
+                    </div>
+                `;
+                renderScooter();
+            } else {
+                // Usuario NO autenticado
+                overlay.style.display = 'flex';
+                userContainer.innerHTML = `<span style="color: #ef4444; font-size: 0.85rem;">🔒 Sesión Protegida</span>`;
+            }
+        }
+
+        // Simulación de Login Federado (Keycloak + Google Auth)
+        function loginWithGoogle() {
+            const button = document.getElementById('btn-login-google');
+            button.innerHTML = 'Conectando con Keycloak...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                button.innerHTML = 'Validando Token JWT...';
+                
+                setTimeout(() => {
+                    // Datos ficticios que devolvería tu microservicio de identidad tras validar con Keycloak
+                    const mockUser = {
+                        name: 'Joshua Demo',
+                        email: 'joshua.demo@ecoride.com',
+                        token: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImVjb3JpZGUifQ.eyJrOHMtY2x1c3RlciI6dHJ1ZX0'
+                    };
+                    
+                    localStorage.setItem('ecoride_user', JSON.stringify(mockUser));
+                    checkAuth();
+                }, 1000);
+            }, 1200);
+        }
+
+        function logout() {
+            localStorage.removeItem('ecoride_user');
+            checkAuth();
+        }
+
+        function renderScooter() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id') || '1';
+            const scooter = scooterData[id] || scooterData['1'];
+            document.getElementById('scooter-id').innerText = `Scooter ${id}`;
+            document.getElementById('scooter-model').innerText = scooter.model;
+            document.getElementById('scooter-status').innerText = scooter.status;
+            document.getElementById('scooter-battery').innerText = scooter.battery;
+            document.getElementById('scooter-location').innerText = scooter.location;
+            document.getElementById('scooter-speed').innerText = scooter.speed;
+            document.getElementById('scooter-last-ridden').innerText = scooter.lastRidden;
+            document.getElementById('scooter-trip-count').innerText = scooter.tripCount;
+            document.getElementById('scooter-tariff').innerText = scooter.tariff;
+            document.getElementById('scooter-condition').innerText = scooter.condition;
+        }
+    </script>
+</head>
+<body onload="checkAuth()">
+
+    <div id="auth-overlay" class="login-overlay">
+        <div class="login-box">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🛴</div>
+            <h2>EcoRide Next Gen</h2>
+            <p>Para acceder a la telemetría e interactuar con los scooters, debes validar tu identidad mediante nuestro proveedor agnóstico.</p>
+            
+            <button id="btn-login-google" class="btn-google" onclick="loginWithGoogle()">
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/copy_of_24dp.svg" alt="Google Logo">
+                Iniciar Sesión con Google
+            </button>
+            
+            <div style="margin-top: 1.5rem; font-size: 0.75rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 0.8rem;">
+                🔒 Autenticación OIDC gestionada por <strong>Keycloak</strong> en Kubernetes.
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <h1>EcoRide - Vista de Scooter</h1>
+        <nav style="display: flex; align-items: center; gap: 1.5rem;">
+            <a href="../index.html">Volver al Panel</a>
+            <a class="active" href="./">Interfaz de Usuario</a>
+            <div id="user-nav-container"></div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card">
+            <div class="grid grid-2">
+                <div>
+                    <h2 id="scooter-id">Scooter 1</h2>
+                    <p>Simula la vista que ve un usuario al abrir la unidad en la app.</p>
+                </div>
+                <div style="text-align: right;">
+                    <span class="status-pill">Online</span>
+                </div>
+            </div>
+
+            <div class="grid grid-3" style="margin-top: 1.4rem; gap: 1rem;">
+                <div class="metric"><span>Modelo</span><span id="scooter-model">EcoRide S7</span></div>
+                <div class="metric"><span>Estado</span><span id="scooter-status">Disponible</span></div>
+                <div class="metric"><span>Nivel de batería</span><span id="scooter-battery">84%</span></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Detalles del Scooter</h2>
+            <div class="grid grid-2">
+                <div>
+                    <p><strong>Ubicación actual:</strong> <span id="scooter-location">Av. Reforma 1024, CDMX</span></p>
+                    <p><strong>Velocidad máxima:</strong> <span id="scooter-speed">24 km/h</span></p>
+                    <p><strong>Último viaje:</strong> <span id="scooter-last-ridden">Hace 12 minutos</span></p>
+                </div>
+                <div>
+                    <p><strong>Viajes realizados hoy:</strong> <span id="scooter-trip-count">28</span></p>
+                    <p><strong>Tarifa actual:</strong> <span id="scooter-tariff">$0.18/min</span></p>
+                    <p><strong>Condición:</strong> <span id="scooter-condition">Listo para uso</span></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Resumen rápido</h2>
+            <div class="callout">
+                Esta pantalla representa la interfaz de cliente donde se ve el scooter, su carga y disponibilidad. Usa la URL <strong>?id=1</strong> o <strong>?id=2</strong> para cambiar de unidad.
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Métrica</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Latencia de red</td><td>80 ms</td></tr>
+                    <tr><td>Estado de bloqueo</td><td>Desbloqueado</td></tr>
+                    <tr><td>Modo de uso</td><td>Pago habilitado</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        Interfaz de usuario simulada para EcoRide · ruta local <code>/scooter/</code>
+    </footer>
+</body>
+</html>

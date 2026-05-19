@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>EcoRide - Consola de Demostración</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>EcoRide Cloud-Native</h1>
+        <nav>
+            <a class="active" href="./index.html">Panel</a>
+            <a href="./scooter/">Vista de Scooter</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>Panel de simulación</h2>
+            <p>Controla el pago, el desbloqueo y la telemetría desde un único panel interactivo.</p>
+            <div class="grid grid-3" style="margin-top: 1rem;">
+                <div class="metric"><span>Servicios activos</span><span>4</span></div>
+                <div class="metric"><span>Pago disponible</span><span>Sí</span></div>
+                <div class="metric"><span>Conexión local</span><span>OK</span></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="grid grid-2">
+                <div>
+                    <h2>1. Simular pago con Stripe</h2>
+                    <p>Genera un intento de pago en el servicio de pagos y prepárate para habilitar el desbloqueo.</p>
+                    <label for="userId">ID de Usuario</label>
+                    <input type="number" id="userId" value="1" style="width: 100%; padding: 0.9rem; border-radius: 14px; border: 1px solid rgba(15,23,42,0.12);">
+                    <button class="button" onclick="procesarPago()" style="margin-top: 1rem;">Pagar Viaje ($10 USD)</button>
+                </div>
+                <div>
+                    <h3>Estado de pago</h3>
+                    <p id="payment-status" style="font-weight: 700; min-height: 3rem;">Listo para iniciar el pago.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="grid grid-2">
+                <div>
+                    <h2>2. Desbloquear scooter</h2>
+                    <label for="scooterId">ID del Scooter</label>
+                    <input type="number" id="scooterId" value="1" style="width: 100%; padding: 0.9rem; border-radius: 14px; border: 1px solid rgba(15,23,42,0.12);">
+                    <button id="btn-unlock" class="button-secondary" onclick="desbloquearScooter()" disabled style="margin-top: 1rem; width: 100%;">Desbloquear Scooter</button>
+                </div>
+                <div>
+                    <h3>Estado de desbloqueo</h3>
+                    <p id="unlock-status" style="font-weight: 700; min-height: 3rem;">Completa el pago para habilitar el desbloqueo.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>3. Telemetría en tiempo real</h2>
+            <p>Consulta el panel de scooters conectado con el servicio de telemetría.</p>
+            <button class="button-secondary" onclick="cargarTelemetria()">Escanear red de scooters</button>
+            <pre id="telemetry-data" style="margin-top: 1rem; background: #f8fafc; padding: 1rem; border-radius: 18px; overflow-x: auto; min-height: 14rem;">Haz clic para leer los datos en tiempo real...</pre>
+        </section>
+    </main>
+
+    <footer>
+        Interfaz de demo EcoRide · accede también a <a href="./scooter/">/scooter</a> para ver la vista del usuario.
+    </footer>
+
+    <script>
+        const stripe = Stripe('pk_test_51TEZRrRoLpHO5n7dKZWZmhscV0AXUsTfhWb868x81bMTKUDV7ZBAKOGTBSfidBFrHnUvERBSPVER32MKusxkjL0H00FLZQTDmm');
+
+        async function procesarPago() {
+            const userId = document.getElementById('userId').value;
+            document.getElementById('payment-status').innerText = '⏳ Conectando con Stripe...';
+
+            try {
+                const res = await fetch('http://localhost:3004/api/payments/checkout', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId: userId, amount: 10 })
+                });
+                const data = await res.json();
+
+                if (data.clientSecret) {
+                    document.getElementById('payment-status').innerText = '✅ Pago aprobado por Stripe. ID secreto generado.';
+                    const btn = document.getElementById('btn-unlock');
+                    btn.disabled = false;
+                    btn.className = 'button';
+                } else {
+                    document.getElementById('payment-status').innerText = '❌ Error en Stripe: ' + (data.error || 'sin detalle');
+                }
+            } catch (err) {
+                document.getElementById('payment-status').innerText = '❌ Error de conexión: ' + err.message;
+            }
+        }
+
+        async function desbloquearScooter() {
+            const scooterId = document.getElementById('scooterId').value;
+            const userId = document.getElementById('userId').value;
+            document.getElementById('unlock-status').innerText = '⚡ Enviando comando IoT de desbloqueo...';
+
+            try {
+                const res = await fetch(`http://localhost:3002/api/unlock/${scooterId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId: userId })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('unlock-status').innerText = '❌ ' + data.error;
+                    return;
+                }
+                document.getElementById('unlock-status').innerText = `🔓 ¡Scooter liberado! Latencia Cloud: ${data.latency_ms}ms · Viaje ID ${data.trip_id}`;
+            } catch (err) {
+                document.getElementById('unlock-status').innerText = '❌ Error al comunicar con el scooter: ' + err.message;
+            }
+        }
+
+        async function cargarTelemetria() {
+            try {
+                const res = await fetch('http://localhost:3003/api/telemetry/scooters');
+                const data = await res.json();
+                document.getElementById('telemetry-data').innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById('telemetry-data').innerText = 'Error: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

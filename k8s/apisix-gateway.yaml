@@ -1,0 +1,271 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apisix
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: apisix-admin-key
+  namespace: apisix
+stringData:
+  ADMIN_KEY: "1234567890abcdef1234567890abcdef"
+type: Opaque
+---
+# 1. Almacenamiento elástico de configuración (etcd)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etcd
+  namespace: apisix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      containers:
+      - name: etcd
+        image: quay.io/coreos/etcd:v3.5.11
+        env:
+        - name: ALLOW_NONE_AUTHENTICATION
+          value: "yes"
+        - name: ETCD_LISTEN_CLIENT_URLS
+          value: "http://0.0.0.0:2379"
+        - name: ETCD_ADVERTISE_CLIENT_URLS
+          value: "http://etcd:2379"
+        - name: ETCD_LISTEN_PEER_URLS
+          value: "http://0.0.0.0:2380"
+        - name: ETCD_INITIAL_ADVERTISE_PEER_URLS
+          value: "http://0.0.0.0:2380"
+        - name: ETCD_INITIAL_CLUSTER
+          value: "default=http://0.0.0.0:2380"
+        ports:
+        - containerPort: 2379
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apisix-config
+  namespace: apisix
+data:
+  config.yaml: |
+    deployment:
+      role: traditional
+      role_traditional:
+        config_provider: etcd
+      etcd:
+        host:
+          - http://etcd:2379
+      admin:
+        admin_key:
+          - name: admin
+            role: admin
+            key: "1234567890abcdef1234567890abcdef"
+    plugin_attr:
+      prometheus:
+        export_addr:
+          ip: "0.0.0.0"
+          port: 9091
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apisix-dashboard-config
+  namespace: apisix
+data:
+  conf.yaml: |
+    conf:
+      etcd:
+        endpoints:
+          - etcd:2379
+      content_security_policy: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src *;"
+    authentication:
+      secret: secret
+      expire_time: 3600
+      users:
+        - username: admin
+          password: admin123
+    plugins:
+      - api-breaker
+      - authz-casbin
+      - authz-casdoor
+      - authz-keycloak
+      - aws-lambda
+      - azure-functions
+      - basic-auth
+      - clickhouse-logger
+      - client-control
+      - consumer-restriction
+      - cors
+      - csrf
+      - datadog
+      - echo
+      - error-log-logger
+      - ext-plugin-post-req
+      - ext-plugin-post-resp
+      - ext-plugin-pre-req
+      - fault-injection
+      - file-logger
+      - forward-auth
+      - google-cloud-logging
+      - grpc-transcode
+      - grpc-web
+      - gzip
+      - hmac-auth
+      - http-logger
+      - ip-restriction
+      - jwt-auth
+      - kafka-logger
+      - kafka-proxy
+      - key-auth
+      - ldap-auth
+      - limit-conn
+      - limit-count
+      - limit-req
+      - loggly
+      - mocking
+      - opa
+      - openid-connect
+      - opentelemetry
+      - openwhisk
+      - prometheus
+      - proxy-cache
+      - proxy-control
+      - proxy-mirror
+      - proxy-rewrite
+      - public-api
+      - real-ip
+      - redirect
+      - referer-restriction
+      - request-id
+      - request-validation
+      - response-rewrite
+      - rocketmq-logger
+      - server-info
+      - serverless-post-function
+      - serverless-pre-function
+      - skywalking
+      - skywalking-logger
+      - sls-logger
+      - splunk-hec-logging
+      - syslog
+      - tcp-logger
+      - traffic-split
+      - ua-restriction
+      - udp-logger
+      - uri-blocker
+      - wolf-rbac
+      - zipkin
+      - elasticsearch-logger
+      - openfunction
+      - tencent-cloud-cls
+      - ai
+      - cas-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+  namespace: apisix
+spec:
+  ports:
+  - port: 2379
+    targetPort: 2379
+  selector:
+    app: etcd
+---
+# 2. El API Gateway (Apache APISIX)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix
+  namespace: apisix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apisix
+  template:
+    metadata:
+      labels:
+        app: apisix
+    spec:
+      containers:
+      - name: apisix
+        image: apache/apisix:3.8.0-debian
+        ports:
+        - containerPort: 9080
+        - containerPort: 9091
+        volumeMounts:
+        - name: apisix-config
+          mountPath: /usr/local/apisix/conf/config.yaml
+          subPath: config.yaml
+      volumes:
+      - name: apisix-config
+        configMap:
+          name: apisix-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-gateway
+  namespace: apisix
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 9080
+    name: http
+  - port: 9091
+    targetPort: 9091
+    name: prometheus
+  selector:
+    app: apisix
+---
+# 3. El Dashboard Visual de Apache APISIX
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix-dashboard
+  namespace: apisix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apisix-dashboard
+  template:
+    metadata:
+      labels:
+        app: apisix-dashboard
+    spec:
+      containers:
+      - name: apisix-dashboard
+        image: apache/apisix-dashboard:3.0.1-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: apisix-dashboard-config
+          mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
+          subPath: conf.yaml
+      volumes:
+      - name: apisix-dashboard-config
+        configMap:
+          name: apisix-dashboard-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-dashboard
+  namespace: apisix
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 9000
+    targetPort: 80
+  selector:
+    app: apisix-dashboard

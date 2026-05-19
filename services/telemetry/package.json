@@ -1,0 +1,14 @@
+{
+    "name": "ecoride-telemetry-processor",
+    "version": "1.0.0",
+    "description": "Microservicio encargado de procesar la telemetría IoT, inyectar eventos en Kafka y persistir en la BD",
+    "main": "telemetry-processor.js",
+    "scripts": {
+        "start": "node telemetry-processor.js"
+    },
+    "dependencies": {
+        "kafkajs": "^2.2.4",
+        "mqtt": "^5.5.5",
+        "pg": "^8.11.5"
+    }
+}
