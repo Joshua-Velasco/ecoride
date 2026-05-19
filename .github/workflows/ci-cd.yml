@@ -39,7 +39,7 @@ jobs:
       - name: Run Laravel PHPUnit Tests
         run: |
           cd services/frontend
-          php artisan test
+          ./vendor/bin/phpunit
 
       # --- Validación de Frontend Assets (Vite) ---
       - name: Setup Node.js
