@@ -6,8 +6,8 @@
     <div class="mobile-header">
         <h1 class="page-title">Mi EcoRide</h1>
         <div class="user-pill">
-            <div class="avatar">U</div>
-            <span>Usuario Demo</span>
+            <div class="avatar">{{ strtoupper(substr(session('name', 'U'), 0, 1)) }}</div>
+            <span style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ session('email') }}">{{ session('email', 'Invitado') }}</span>
             <form method="POST" action="{{ route('logout') }}" style="margin: 0; display: flex; align-items: center;">
                 @csrf
                 <button type="submit" style="background: none; border: none; color: var(--danger); cursor: pointer; padding: 0 0.5rem;" title="Cerrar sesión">
