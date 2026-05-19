@@ -51,32 +51,59 @@ else
   echo "   Realm 'ecoride' creado con éxito."
 fi
 
-echo "2️⃣ Creando Cliente OIDC 'ecoride-app'..."
-CLIENT_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$KEYCLOAK_URL/admin/realms/ecoride/clients?clientId=ecoride-app" | grep -v "404" || echo "404")
+echo "2️⃣ Configurando Cliente OIDC 'ecoride-app'..."
+CLIENT_JSON=$(curl -sf -H "Authorization: Bearer $TOKEN" "$KEYCLOAK_URL/admin/realms/ecoride/clients?clientId=ecoride-app")
+CLIENT_ID=$(echo "$CLIENT_JSON" | python3 -c "import sys,json; data=json.load(sys.stdin); print(data[0]['id']) if data else print('')")
 
-# Creamos o actualizamos
-curl -sf -X POST "$KEYCLOAK_URL/admin/realms/ecoride/clients" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "clientId": "ecoride-app",
-    "enabled": true,
-    "publicClient": false,
-    "secret": "'"$CLIENT_SECRET"'",
-    "redirectUris": [
-      "http://localhost:8000/*",
-      "http://127.0.0.1:8000/*",
-      "http://localhost/*",
-      "http://ecoride.duckdns.org/*"
-    ],
-    "webOrigins": [
-      "http://localhost:8000",
-      "http://127.0.0.1:8000",
-      "http://localhost",
-      "http://ecoride.duckdns.org"
-    ],
-    "standardFlowEnabled": true
-  }' || echo "   Cliente 'ecoride-app' ya existe o se actualizó."
+if [ -n "$CLIENT_ID" ]; then
+  echo "   Cliente 'ecoride-app' ya existe. Actualizando configuración..."
+  curl -sf -X PUT "$KEYCLOAK_URL/admin/realms/ecoride/clients/$CLIENT_ID" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "clientId": "ecoride-app",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "'"$CLIENT_SECRET"'",
+      "redirectUris": [
+        "http://localhost:8000/*",
+        "http://127.0.0.1:8000/*",
+        "http://localhost/*",
+        "http://ecoride.duckdns.org/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost",
+        "http://ecoride.duckdns.org"
+      ],
+      "standardFlowEnabled": true
+    }'
+else
+  echo "   Creando Cliente 'ecoride-app'..."
+  curl -sf -X POST "$KEYCLOAK_URL/admin/realms/ecoride/clients" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "clientId": "ecoride-app",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "'"$CLIENT_SECRET"'",
+      "redirectUris": [
+        "http://localhost:8000/*",
+        "http://127.0.0.1:8000/*",
+        "http://localhost/*",
+        "http://ecoride.duckdns.org/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost",
+        "http://ecoride.duckdns.org"
+      ],
+      "standardFlowEnabled": true
+    }'
+fi
 
 echo "3️⃣ Configurando Proveedor de Identidad 'Google'..."
 PROVIDER_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$KEYCLOAK_URL/admin/realms/ecoride/identity-provider/instances/google")
