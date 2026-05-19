@@ -102,5 +102,6 @@ jobs:
             kubectl rollout restart deployment/frontend-deployment
             kubectl rollout restart deployment/telemetry-service
             kubectl rollout restart deployment/payment-service
+            kubectl rollout restart deployment/grafana-deployment -n monitoring
             
             echo "🎉 ¡Despliegue automático terminado con éxito!"
