@@ -32,13 +32,18 @@ def create_checkout_session():
     amount = int(data.get('amount', 10))  # $10 USD por defecto
     
     try:
-        # Crear la intención de pago en la nube de Stripe
-        intent = stripe.PaymentIntent.create(
-            amount=amount * 100,  # Stripe procesa en centavos (1000 = $10.00)
-            currency='usd',
-            payment_method_types=['card'],
-            metadata={'user_id': user_id}
-        )
+        # Simulación local si se usa la clave de prueba
+        if stripe.api_key == 'sk_test_PLACEHOLDER':
+            client_secret = 'mock_client_secret_placeholder_success'
+        else:
+            # Crear la intención de pago en la nube de Stripe
+            intent = stripe.PaymentIntent.create(
+                amount=amount * 100,  # Stripe procesa en centavos (1000 = $10.00)
+                currency='usd',
+                payment_method_types=['card'],
+                metadata={'user_id': user_id}
+            )
+            client_secret = intent.client_secret
         
         # Guardar registro local en PostgreSQL como simulación exitosa
         conn = get_db_connection()
@@ -53,7 +58,7 @@ def create_checkout_session():
         conn.close()
         
         return jsonify({
-            'clientSecret': intent.client_secret,
+            'clientSecret': client_secret,
             'paymentId': payment_id,
             'status': 'IntentCreated'
         })
