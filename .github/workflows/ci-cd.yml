@@ -70,7 +70,7 @@ jobs:
       - name: Validate Node.js Backend Dependencies
         run: |
           cd services/telemetry
-          npm ci
+          npm install
 
   # 2. Fase de Despliegue Continuo (CD): Despliegue automático en el ECS vía SSH
   continuous-deployment:
