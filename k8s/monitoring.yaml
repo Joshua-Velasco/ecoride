@@ -113,7 +113,7 @@ data:
         access: proxy
         url: http://prometheus-service:9090
         isDefault: true
-        editable: false
+        editable: true
 ---
 # 3. Despliegue de Grafana
 apiVersion: apps/v1
