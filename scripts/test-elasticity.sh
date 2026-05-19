@@ -23,5 +23,5 @@ echo "(Usando Apache Bench vía Docker. Presiona Ctrl+C para detener el ataque)"
 echo ""
 
 # Hacemos un ataque simulando 50 usuarios concurrentes, 50,000 peticiones al servicio de pagos.
-# Reemplazar la URL según donde esté corriendo tu APISIX
-docker run --rm -it rcmartinez/apache-bench -n 50000 -c 50 -m POST "http://host.docker.internal:9080/api/payment/checkout"
+# Usando bombardier (una excelente herramienta de carga en HTTP)
+docker run --rm -it alpine/bombardier -c 100 -n 100000 -m POST "http://host.docker.internal:9080/api/payment/checkout"
