@@ -58,7 +58,17 @@ class FrontendController extends Controller
 
     public function logout(Request $request)
     {
+        // 1. Destruir sesión local en Laravel
         $request->session()->flush();
-        return redirect()->route('login')->with('status', 'Has cerrado sesión.');
+        
+        // 2. Destruir sesión SSO en Keycloak
+        $keycloakBaseUrl = env('KEYCLOAK_BASE_URL', 'http://localhost:30005');
+        $keycloakRealm = env('KEYCLOAK_REALM', 'ecoride');
+        $clientId = env('KEYCLOAK_CLIENT_ID', 'ecoride-app');
+        $redirectUri = urlencode(route('login'));
+        
+        $logoutUrl = "{$keycloakBaseUrl}/realms/{$keycloakRealm}/protocol/openid-connect/logout?client_id={$clientId}&post_logout_redirect_uri={$redirectUri}";
+        
+        return redirect($logoutUrl);
     }
 }
