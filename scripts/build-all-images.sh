@@ -24,9 +24,9 @@ echo "📦 Compilando Payment Service..."
 docker build -t payment-service:latest ./services/payment
 
 # 5. Telemetry Service (Flask API)
-# Nota: construimos usando el Dockerfile de servicios/telemetry pero lo taggeamos apropiadamente
+# Nota: construimos usando el Dockerfile.api de servicios/telemetry
 echo "📦 Compilando Telemetry Service..."
-docker build -t telemetry-service:latest ./services/telemetry
+docker build -t telemetry-service:latest -f ./services/telemetry/Dockerfile.api ./services/telemetry
 
 # 6. Telemetry Processor (Node.js Ingestion Pipeline)
 # Nota: comparte el mismo código que telemetry pero corre con ecoride/telemetry-processor:latest

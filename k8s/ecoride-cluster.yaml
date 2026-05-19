@@ -173,6 +173,11 @@ spec:
         env:
         - name: DB_HOST
           value: "postgres"
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: stripe-secret
+              key: stripe-secret-key
 ---
 apiVersion: v1
 kind: Service
