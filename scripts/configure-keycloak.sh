@@ -33,12 +33,21 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 
-echo "1️⃣ Creando Realm 'ecoride'..."
+echo "1️⃣ Configurando Realm 'ecoride'..."
 # Comprobamos si el realm ya existe para no fallar
 REALM_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$KEYCLOAK_URL/admin/realms/ecoride")
 
 if [ "$REALM_EXISTS" -eq 200 ]; then
-  echo "   Realm 'ecoride' ya existe. Omitiendo creación."
+  echo "   Realm 'ecoride' ya existe. Actualizando configuración..."
+  curl -sf -X PUT "$KEYCLOAK_URL/admin/realms/ecoride" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "realm": "ecoride",
+      "enabled": true,
+      "displayName": "EcoRide Auth Realm",
+      "registrationAllowed": true
+    }'
 else
   curl -sf -X POST "$KEYCLOAK_URL/admin/realms" \
     -H "Authorization: Bearer $TOKEN" \
@@ -46,10 +55,12 @@ else
     -d '{
       "realm": "ecoride",
       "enabled": true,
-      "displayName": "EcoRide Auth Realm"
+      "displayName": "EcoRide Auth Realm",
+      "registrationAllowed": true
     }'
   echo "   Realm 'ecoride' creado con éxito."
 fi
+
 
 echo "2️⃣ Configurando Cliente OIDC 'ecoride-app'..."
 CLIENT_JSON=$(curl -sf -H "Authorization: Bearer $TOKEN" "$KEYCLOAK_URL/admin/realms/ecoride/clients?clientId=ecoride-app")
@@ -146,10 +157,34 @@ else
 fi
 echo "   Proveedor Google configurado con éxito."
 
+echo "4️⃣ Configurando Usuario de Prueba 'testuser'..."
+USER_JSON=$(curl -sf -H "Authorization: Bearer $TOKEN" "$KEYCLOAK_URL/admin/realms/ecoride/users?username=testuser")
+if [ "$USER_JSON" != "[]" ] && [ -n "$USER_JSON" ]; then
+  echo "   Usuario 'testuser' ya existe. Omitiendo creación."
+else
+  curl -sf -X POST "$KEYCLOAK_URL/admin/realms/ecoride/users" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "username": "testuser",
+      "email": "testuser@ecoride.com",
+      "enabled": true,
+      "firstName": "Eco",
+      "lastName": "Rider",
+      "credentials": [{
+        "type": "password",
+        "value": "test1234",
+        "temporary": false
+      }]
+    }'
+  echo "   Usuario 'testuser' creado con éxito."
+fi
+
 echo ""
 echo "🎉 Configuración de Keycloak finalizada correctamente."
 echo "   Realm: ecoride"
 echo "   Client ID: ecoride-app"
 echo "   Client Secret: $CLIENT_SECRET"
 echo "   Redirección de Google en Keycloak: $KEYCLOAK_URL/realms/ecoride/broker/google/endpoint"
+echo "   🔑 Usuario de prueba: testuser / Contraseña: test1234"
 echo ""
