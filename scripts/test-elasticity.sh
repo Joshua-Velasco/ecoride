@@ -24,4 +24,4 @@ echo ""
 
 # Hacemos un ataque simulando 50 usuarios concurrentes, 50,000 peticiones al servicio de pagos.
 # Usando bombardier (una excelente herramienta de carga en HTTP)
-docker run --rm -it alpine/bombardier -c 100 -n 100000 -m POST "http://host.docker.internal:9080/api/payment/checkout"
+docker run --rm -it alpine/bombardier -c 100 -n 100000 -m POST "http://ecoride.duckdns.org/api/payment/checkout"
