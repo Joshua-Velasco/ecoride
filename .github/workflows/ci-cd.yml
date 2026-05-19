@@ -21,14 +21,14 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
           extensions: mbstring, xml, ctype, iconv, mysql, zip, pdo_sqlite
           coverage: none
 
       - name: Install Composer Dependencies
         run: |
           cd services/frontend
-          composer install --no-progress --no-interaction --prefer-dist
+          composer install --no-progress --no-interaction --prefer-dist --ignore-platform-reqs
 
       - name: Prepare Laravel Environment
         run: |
