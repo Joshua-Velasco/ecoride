@@ -1,0 +1,104 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # 1. Fase de Integración Continua (CI): Pruebas y Validación de Sintaxis
+  continuous-integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # --- Validación de Laravel / PHP ---
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, mysql, zip, pdo_sqlite
+          coverage: none
+
+      - name: Install Composer Dependencies
+        run: |
+          cd services/frontend
+          composer install --no-progress --no-interaction --prefer-dist
+
+      - name: Prepare Laravel Environment
+        run: |
+          cd services/frontend
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run Laravel PHPUnit Tests
+        run: |
+          cd services/frontend
+          php artisan test
+
+      # --- Validación de Frontend Assets (Vite) ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/frontend/package-lock.json
+
+      - name: Build Vite Assets
+        run: |
+          cd services/frontend
+          npm ci
+          npm run build
+
+      # --- Validación de Sintaxis de Python ---
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Validate Python Syntax
+        run: |
+          python -m py_compile services/payment/app.py
+          python -m py_compile scripts/simulate-traffic.py
+
+      # --- Validación de Node.js Backend ---
+      - name: Validate Node.js Backend Dependencies
+        run: |
+          cd services/telemetry
+          npm ci
+
+  # 2. Fase de Despliegue Continuo (CD): Despliegue automático en el ECS vía SSH
+  continuous-deployment:
+    needs: continuous-integration
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Deploy to Alibaba Cloud ECS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "🚚 Iniciando despliegue automático en servidor ECS..."
+            cd /root/ecoride
+            
+            echo "📥 Descargando últimos cambios desde GitHub..."
+            git pull origin main
+            
+            echo "🛠️ Recompilando todas las imágenes Docker..."
+            bash scripts/build-all-images.sh
+            
+            echo "🚀 Aplicando manifiestos de Kubernetes..."
+            kubectl apply -f k8s/
+            
+            echo "🔄 Reiniciando despliegue del frontend para aplicar actualizaciones..."
+            kubectl rollout restart deployment/frontend-deployment
+            
+            echo "🎉 ¡Despliegue automático terminado con éxito!"
