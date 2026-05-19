@@ -98,7 +98,9 @@ jobs:
             echo "🚀 Aplicando manifiestos de Kubernetes..."
             kubectl apply -f k8s/
             
-            echo "🔄 Reiniciando despliegue del frontend para aplicar actualizaciones..."
+            echo "🔄 Reiniciando despliegues para aplicar actualizaciones..."
             kubectl rollout restart deployment/frontend-deployment
+            kubectl rollout restart deployment/telemetry-service
+            kubectl rollout restart deployment/payment-service
             
             echo "🎉 ¡Despliegue automático terminado con éxito!"
