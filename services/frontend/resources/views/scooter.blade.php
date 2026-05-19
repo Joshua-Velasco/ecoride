@@ -2,62 +2,62 @@
 
 @section('content')
 <div class="scooter-page-container">
-    <div class="dashboard-row">
-        <!-- Mapa de Simulación de la Flota (Mock Visual) -->
-        <div class="card map-card">
-            <h2>Mapa de Flota en Tiempo Real</h2>
-            <p>Representación espacial de los scooters en Ciudad de México basándose en las coordenadas GPS de la telemetría.</p>
-            
-            <div class="mock-map-canvas" id="mockMapCanvas">
-                <!-- Se poblará dinámicamente con marcadores posicionados de manera absoluta -->
-                <div class="map-grid-overlay"></div>
-                <div id="mapMarkers"></div>
-            </div>
-            
-            <div class="map-legend">
-                <div class="legend-item"><span class="legend-dot available"></span> Disponible</div>
-                <div class="legend-item"><span class="legend-dot active"></span> En Uso (Alquilado)</div>
-                <div class="legend-item"><span class="legend-dot low-battery"></span> Batería Baja (&lt; 30%)</div>
-            </div>
-        </div>
+    <div class="mobile-header">
+        <h1 class="page-title">Red Activa</h1>
+    </div>
 
-        <!-- Registro de Viajes Activos (Multiusuario) -->
-        <div class="card trips-card">
-            <h2>Monitoreo de Viajes Activos</h2>
-            <p>Lista de usuarios y vehículos con alquileres activos registrados en PostgreSQL.</p>
-            
-            <div class="table-container">
-                <table class="trips-table">
-                    <thead>
-                        <tr>
-                            <th>ID Viaje</th>
-                            <th>Usuario</th>
-                            <th>Vehículo</th>
-                            <th>Estado</th>
-                            <th>Hora Inicio</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activeTripsTableBody">
-                        <tr>
-                            <td colspan="5" class="table-loading">Cargando viajes registrados...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <!-- Registro de Viajes Activos (Multiusuario) -->
+    <div class="card trips-card">
+        <div class="section-header">
+            <h2>Viajes en Curso</h2>
+            <p>Lista de usuarios y vehículos con alquileres activos en la base de datos.</p>
+        </div>
+        
+        <div class="table-container">
+            <table class="trips-table">
+                <thead>
+                    <tr>
+                        <th>Viaje</th>
+                        <th>Vehículo</th>
+                        <th>Estado</th>
+                        <th>Inicio</th>
+                    </tr>
+                </thead>
+                <tbody id="activeTripsTableBody">
+                    <tr>
+                        <td colspan="4" class="table-loading">Cargando viajes registrados...</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Registro de Eventos MQTT en Tiempo Real -->
-    <div class="dashboard-section">
-        <div class="card event-log-card">
-            <div class="card-header">
-                <h2>Historial de Eventos IoT (MQTT/Kafka Ingestion)</h2>
-                <button class="btn btn-sm btn-clear" onclick="clearEventLogs()">Limpiar Registro</button>
+    <!-- Panel de Telemetría Completo -->
+    <div class="card telemetry-dashboard-card">
+        <div class="telemetry-header">
+            <h2>Panel de Telemetría (Flota Completa)</h2>
+            <div class="live-indicator">
+                <span class="pulse-dot"></span>
+                <span>En Vivo</span>
             </div>
-            <p>Se muestran los últimos eventos de telemetría reportados por los scooters al broker MQTT EMQX y procesados por el pipeline.</p>
-            <div class="event-log-console" id="eventLogConsole">
-                <div class="console-line system">[SISTEMA] Escuchando eventos del pipeline de telemetría...</div>
-            </div>
+        </div>
+        <div class="table-container">
+            <table class="telemetry-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>GPS</th>
+                        <th>Batería</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="telemetryTableBody">
+                    <tr>
+                        <td colspan="5" class="table-loading">Cargando datos de telemetría...</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

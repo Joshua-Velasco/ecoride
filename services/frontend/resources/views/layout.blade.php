@@ -30,15 +30,7 @@
             </nav>
 
             <div class="header-right">
-                <!-- Selector de usuario simulado (Demo Multi-usuario) -->
-                <div class="demo-user-selector">
-                    <label for="simulatedUserSelect">Simular Usuario:</label>
-                    <select id="simulatedUserSelect" onchange="onUserChange(this.value)">
-                        <option value="1">User 1 (user1@ecoride.com)</option>
-                        <option value="2">User 2 (user2@ecoride.com)</option>
-                        <option value="3">User 3 (user3@ecoride.com)</option>
-                    </select>
-                </div>
+                <!-- User profile only (demo selector removed) -->
 
                 @if(session('logged_in'))
                     <div class="user-profile">

@@ -1,32 +1,29 @@
 /* ==========================================================================
-   EcoRide Core Design System & Theme Styling
+   EcoRide Mobile-First Design System
    ========================================================================== */
 
 :root {
-    --primary: #10b981; /* Verde esmeralda (Eco-friendly) */
+    --primary: #10b981;
     --primary-hover: #059669;
-    --secondary: #6366f1; /* Índigo */
-    --secondary-hover: #4f46e5;
-    --background: #f8fafc;
+    --secondary: #6366f1;
+    --background: #f1f5f9;
     --surface: #ffffff;
     --text-primary: #0f172a;
     --text-secondary: #475569;
-    --border-color: #f1f5f9;
+    --border-color: #e2e8f0;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --info: #06b6d4;
-    --gray-light: #f8fafc;
-    --radius-lg: 16px;
-    --radius-md: 12px;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
-    --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.1);
+    --info: #3b82f6;
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.1);
 }
 
 body {
     margin: 0;
-    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Outfit', system-ui, sans-serif;
     background: var(--background);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
@@ -39,771 +36,331 @@ body {
 }
 
 /* ==========================================================================
-   Header & Navbar User Profile Display
+   Mobile Header & Navigation
    ========================================================================== */
 
 .app-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 2.5rem;
-    background: var(--surface);
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .brand {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 800;
-    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 .brand-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
+    width: 10px; height: 10px;
     background: var(--primary);
     border-radius: 50%;
 }
 
 .app-nav {
     display: flex;
-    gap: 1.5rem;
-    align-items: center;
+    gap: 1rem;
 }
 
 .app-nav a {
     color: var(--text-secondary);
     text-decoration: none;
-    font-weight: 550;
-    padding: 0.5rem 0.85rem;
-    border-radius: var(--radius-md);
-    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 12px;
 }
 
-.app-nav a:hover,
 .app-nav a.active {
-    color: var(--primary);
     background: #ecfdf5;
+    color: var(--primary);
 }
 
-.header-right {
+.user-profile { display: none; } /* Ocultar perfil en header para móviles, movido al dashboard */
+
+/* ==========================================================================
+   Dashboard Layout (Mobile First)
+   ========================================================================== */
+
+.app-content {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+.dashboard-container {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 1.5rem;
 }
 
-/* Switcher de usuario para testear multiusuario */
-.demo-user-selector {
+.mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.user-pill {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: var(--gray-light);
-    padding: 0.4rem 0.8rem;
+    background: white;
+    padding: 0.4rem 0.8rem 0.4rem 0.4rem;
     border-radius: 20px;
-    border: 1px solid #e2e8f0;
-}
-
-.demo-user-selector label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-}
-
-.demo-user-selector select {
-    background: transparent;
-    border: none;
-    font-family: inherit;
+    box-shadow: var(--shadow-sm);
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--secondary);
-    cursor: pointer;
-    outline: none;
 }
 
-/* Perfil de Usuario */
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding-left: 1.25rem;
-    border-left: 2px solid var(--border-color);
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-}
-
-.user-name {
-    font-size: 0.9rem;
-    font-weight: 650;
-    color: var(--text-primary);
-}
-
-.user-email {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-}
-
-.user-avatar {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
+.user-pill .avatar {
+    width: 28px; height: 28px;
+    background: var(--secondary);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 1rem;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-}
-
-.logout-form {
-    display: flex;
-}
-
-.logout-btn {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 0.4rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.logout-btn:hover {
-    color: var(--danger);
-    background: #fef2f2;
-}
-
-/* ==========================================================================
-   Dashboard & Panels Layout
-   ========================================================================== */
-
-.app-content {
-    width: min(1200px, 100%);
-    margin: 2rem auto;
-    padding: 0 1.5rem;
-    box-sizing: border-box;
-}
-
-.dashboard-container,
-.scooter-page-container {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-.dashboard-row {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 1.5rem;
-}
-
-@media (max-width: 768px) {
-    .dashboard-row {
-        grid-template-columns: 1fr;
-    }
 }
 
 .card {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-md);
-    padding: 1.75rem;
-    position: relative;
-    transition: box-shadow 0.3s ease;
-}
-
-.card:hover {
-    box-shadow: var(--shadow-lg);
-}
-
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.badge {
-    padding: 0.3rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.badge-primary {
-    background: #eef2ff;
-    color: var(--secondary);
-}
-
-.badge-success {
-    background: #ecfdf5;
-    color: var(--primary);
-}
-
-.badge-danger {
-    background: #fef2f2;
-    color: var(--danger);
-}
-
-/* ==========================================================================
-   Active Scooter Graphical Widget
-   ========================================================================== */
-
-.active-scooter-panel {
-    background: linear-gradient(to bottom right, #ffffff, #faf5ff);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 200px;
-}
-
-.empty-scooter-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    color: #94a3b8;
+    box-shadow: var(--shadow-sm);
     padding: 1.5rem;
 }
 
-.scooter-icon-placeholder {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: #f1f5f9;
-    color: #64748b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-}
-
-/* Renderización del Scooter Activo */
-.active-scooter-card {
-    display: flex;
-    gap: 1.5rem;
-    align-items: center;
-}
-
-.scooter-visual {
-    background: linear-gradient(135deg, #10b981, #3b82f6);
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
-    flex-shrink: 0;
-}
-
-.scooter-details {
-    flex-grow: 1;
-}
-
-.scooter-details h3 {
-    margin: 0 0 0.25rem;
-    font-size: 1.25rem;
-    font-weight: 750;
-    color: var(--text-primary);
-}
-
-.scooter-status-pill {
-    display: inline-block;
-    padding: 0.15rem 0.5rem;
-    border-radius: 10px;
-    font-size: 0.65rem;
-    font-weight: 800;
-    background: #d1fae5;
-    color: var(--primary-hover);
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-}
-
-.scooter-details p {
-    margin: 0.35rem 0;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.scooter-details strong {
-    color: var(--text-primary);
-}
-
-/* Barra de batería interactiva */
-.battery-status {
-    margin-top: 0.75rem;
-}
-
-.battery-text {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.battery-bar-bg {
-    width: 100%;
-    height: 8px;
-    background: #e2e8f0;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.battery-bar-fill {
-    height: 100%;
-    transition: width 0.5s ease-in-out, background-color 0.5s ease;
-}
-
 /* ==========================================================================
-   Scooter Fleet Deck
+   Map & Fleet
    ========================================================================== */
 
-.scooter-deck {
-    display: grid;
-    gap: 1.25rem;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+.map-card-mobile {
+    padding: 0.5rem;
+    border-radius: var(--radius-lg);
 }
-
-.scooter-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 1.25rem;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.scooter-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
-    border-color: #cbd5e1;
-}
-
-.scooter-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.scooter-card-title {
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-.scooter-card-battery {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-}
-
-.battery-icon {
-    width: 12px;
-    height: 20px;
-    border: 1.5px solid currentColor;
-    border-radius: 2px;
-    position: relative;
-    padding: 1px;
-}
-
-.battery-icon::after {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: 3px;
-    width: 4px;
-    height: 2.5px;
-    background: currentColor;
-    border-radius: 1px 1px 0 0;
-}
-
-.battery-level-fill {
-    width: 100%;
-    background: currentColor;
-    border-radius: 1px;
-}
-
-.scooter-card-gps {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    font-family: monospace;
-}
-
-.scooter-card-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.scooter-card-actions button {
-    flex: 1;
-    padding: 0.6rem 0.5rem;
-    font-size: 0.75rem;
-    border-radius: 8px;
-    font-weight: 700;
-}
-
-/* ==========================================================================
-   Buttons and Forms
-   ========================================================================== */
-
-button,
-.btn {
-    background: var(--primary);
-    border: none;
-    color: white;
-    padding: 0.85rem 1.25rem;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-weight: 600;
-    font-family: inherit;
-    transition: background-color 0.2s, transform 0.1s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-button:hover,
-.btn:hover {
-    background: var(--primary-hover);
-}
-
-button:active,
-.btn:active {
-    transform: scale(0.98);
-}
-
-.btn-secondary {
-    background: var(--secondary);
-}
-
-.btn-secondary:hover {
-    background: var(--secondary-hover);
-}
-
-.btn-info {
-    background: var(--info);
-}
-
-.btn-info:hover {
-    background: #0891b2;
-}
-
-.btn-danger {
-    background: var(--danger);
-}
-
-.btn-danger:hover {
-    background: #dc2626;
-}
-
-.btn-sm {
-    padding: 0.5rem 0.85rem;
-    font-size: 0.8rem;
-}
-
-.btn-clear {
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #cbd5e1;
-}
-
-.btn-clear:hover {
-    background: #e2e8f0;
-}
-
-.api-actions-pill {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
-}
-
-/* ==========================================================================
-   Live Telemetry Table
-   ========================================================================== */
-
-.telemetry-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.live-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--primary-hover);
-    text-transform: uppercase;
-    background: #ecfdf5;
-    padding: 0.25rem 0.65rem;
-    border-radius: 12px;
-}
-
-.pulse-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--primary);
-    border-radius: 50%;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(0.85); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-    100% { transform: scale(0.85); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
-.table-container {
-    overflow-x: auto;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-    margin-top: 1.25rem;
-}
-
-.telemetry-table,
-.trips-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-.telemetry-table th,
-.trips-table th {
-    background: var(--gray-light);
-    color: var(--text-secondary);
-    font-weight: 700;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    padding: 0.9rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.telemetry-table td,
-.trips-table td {
-    padding: 0.9rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.85rem;
-}
-
-.telemetry-table tbody tr:hover,
-.trips-table tbody tr:hover {
-    background: #f8fafc;
-}
-
-.table-loading {
-    text-align: center;
-    color: #64748b;
-    padding: 2.5rem !important;
-    font-style: italic;
-}
-
-/* ==========================================================================
-   Map Simulation Page
-   ========================================================================== */
 
 .mock-map-canvas {
     width: 100%;
-    height: 380px;
-    background: #e2e8f0; /* Color gris de cemento */
+    height: 300px;
+    background: #e2e8f0;
     border-radius: var(--radius-md);
     position: relative;
     overflow: hidden;
-    border: 2px solid #cbd5e1;
-    background-image: 
-        radial-gradient(#cbd5e1 1.5px, transparent 1.5px), 
-        radial-gradient(#cbd5e1 1.5px, #e2e8f0 1.5px);
-    background-size: 30px 30px;
-    background-position: 0 0, 15px 15px;
 }
 
 .map-grid-overlay {
     position: absolute;
     inset: 0;
     box-shadow: inset 0 0 40px rgba(0,0,0,0.06);
-    pointer-events: none;
+    background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
 }
 
-.map-legend {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 1rem;
-    justify-content: center;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.legend-dot.available { background: var(--primary); }
-.legend-dot.active { background: var(--secondary); }
-.legend-dot.low-battery { background: var(--danger); }
-
-/* Marcadores del Mapa */
 .map-marker {
     position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 800;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    cursor: pointer;
-    transition: all 0.5s ease-out; /* Movimiento suave en el mapa! */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     transform: translate(-50%, -50%);
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
-.map-marker.marker-available {
-    background: var(--primary);
-    border: 2px solid white;
-}
+.map-marker:active { transform: translate(-50%, -50%) scale(0.9); }
+.marker-available { background: var(--primary); border: 2px solid white; }
+.marker-active { background: var(--secondary); border: 2px solid white; animation: pulse 2s infinite; }
+.marker-low { background: var(--danger); border: 2px solid white; }
 
-.map-marker.marker-active {
-    background: var(--secondary);
-    border: 2px solid white;
-    animation: markerPulse 2s infinite;
-}
-
-.map-marker.marker-low {
-    background: var(--danger);
-    border: 2px solid white;
-}
-
-@keyframes markerPulse {
-    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6); }
-    70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
     100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
 }
 
-.map-marker::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #0f172a;
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    box-shadow: var(--shadow-sm);
+.scooter-deck-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
 }
 
-.map-marker:hover::after {
-    opacity: 1;
+.scooter-card-mini {
+    flex: 0 0 120px;
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    scroll-snap-align: start;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
 }
+
+.card-mini-header h4 { margin: 0 0 0.5rem; font-size: 1rem; }
+.battery-pill { display: flex; align-items: center; gap: 0.4rem; font-weight: 700; font-size: 0.85rem; }
+.battery-icon { width: 10px; height: 16px; border: 1.5px solid currentColor; border-radius: 2px; padding: 1px; }
+.battery-level-fill { width: 100%; background: currentColor; border-radius: 1px; }
 
 /* ==========================================================================
-   Event Log Console
+   Modals (MQTT & Stripe)
    ========================================================================== */
 
-.card-header {
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end; /* Mobile friendly bottom sheet */
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .modal-overlay { align-items: center; }
+}
+
+.modal-card {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 24px 24px 0 0;
+    padding: 1.5rem;
+    animation: slideUp 0.3s ease-out;
+}
+
+@media (min-width: 768px) {
+    .modal-card { border-radius: 24px; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h3 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+.btn-close { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+
+.scooter-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-box {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem; }
+.stat-value { font-size: 1.2rem; font-weight: 800; color: var(--text-primary); }
+
+.mqtt-console-container {
+    background: #0f172a;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.console-header {
+    background: #1e293b;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
 .event-log-console {
-    background: #0f172a;
-    color: #38bdf8; /* Azul cyan claro */
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.8rem;
-    padding: 1.25rem;
-    border-radius: var(--radius-md);
-    height: 180px;
+    height: 120px;
     overflow-y: auto;
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    padding: 1rem;
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #38bdf8;
     display: flex;
-    flex-direction: column-reverse; /* Mostrar eventos más nuevos primero */
+    flex-direction: column;
     gap: 0.4rem;
-}
-
-.console-line {
-    line-height: 1.4;
 }
 
 .console-line.system { color: #94a3b8; }
 .console-line.mqtt { color: #34d399; }
-.console-line.http { color: #f43f5e; }
+
+.modal-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+}
 
 /* ==========================================================================
-   Alerts, Debug and Box Details
+   Stripe Modal
    ========================================================================== */
-
-.alert {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    border-radius: var(--radius-md);
-    margin-bottom: 1.5rem;
-    font-weight: 500;
+.stripe-card {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
 }
+.stripe-header { display: flex; justify-content: space-between; margin-bottom: 2rem; }
+.checkout-amount { font-size: 1.8rem; font-weight: 800; margin-bottom: 2rem; }
 
-.alert-success {
-    background: #ecfdf5;
-    border: 1px solid #d1fae5;
-    color: var(--primary-hover);
-}
+.checkout-spinner { display: flex; flex-direction: column; align-items: center; gap: 1rem; color: var(--text-secondary); font-weight: 500; }
+.spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--secondary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.response-box {
-    background: var(--gray-light);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 1rem;
-    font-family: monospace;
-    font-size: 0.75rem;
-    color: #475569;
-    white-space: pre-wrap;
-    word-break: break-all;
-}
+.checkout-success { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--success); font-weight: 700; font-size: 1.2rem; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.success-icon { width: 60px; height: 60px; background: var(--success); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; margin-bottom: 1rem; }
+.small-text { font-size: 0.75rem; color: var(--text-secondary); font-weight: 400; margin-top: 0.5rem; }
 
-.debug-card {
-    background: #fafaf9;
-}
+@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* ==========================================================================
+   Buttons & Tables
+   ========================================================================== */
+.btn { border: none; padding: 1rem; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; color: white; transition: transform 0.1s; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); }
+.btn-secondary { background: var(--secondary); }
+.btn-danger { background: var(--danger); }
+.btn-info { background: var(--info); }
+.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; }
+
+.table-container { overflow-x: auto; margin-top: 1rem; border: 1px solid var(--border-color); border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { background: #f8fafc; padding: 0.8rem 1rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); }
+td { padding: 0.8rem 1rem; border-top: 1px solid var(--border-color); font-size: 0.85rem; }
+.badge { padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
+.badge-success { background: #d1fae5; color: #059669; }
+.badge-danger { background: #fee2e2; color: #dc2626; }
+.badge-primary { background: #e0e7ff; color: #4f46e5; }
