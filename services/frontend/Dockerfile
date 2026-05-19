@@ -19,5 +19,9 @@ COPY . /var/www/html
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Cambiar el DocumentRoot de Apache a la carpeta /public de Laravel
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
 EXPOSE 80
 CMD ["apache2-foreground"]
