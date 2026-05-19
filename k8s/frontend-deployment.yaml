@@ -25,6 +25,10 @@ spec:
           value: production
         - name: APP_DEBUG
           value: "false"
+        - name: SESSION_DRIVER
+          value: file
+        - name: CACHE_STORE
+          value: file
         - name: KEYCLOAK_BASE_URL
           value: http://ecoride.duckdns.org:30005
         - name: KEYCLOAK_REALM
