@@ -14,10 +14,12 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "paho-mqtt"])
     import paho.mqtt.client as mqtt
 
+import os
+
 # Configuración
-MQTT_BROKER = "localhost"
-MQTT_PORT = 1883
-API_GATEWAY = "http://localhost"
+MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+API_GATEWAY = os.getenv("API_GATEWAY", "http://localhost")
 
 # Estado de los scooters simulados
 scooters = {
