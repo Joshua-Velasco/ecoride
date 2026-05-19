@@ -66,12 +66,14 @@ curl -sf -X POST "$KEYCLOAK_URL/admin/realms/ecoride/clients" \
     "redirectUris": [
       "http://localhost:8000/*",
       "http://127.0.0.1:8000/*",
-      "http://localhost/*"
+      "http://localhost/*",
+      "http://ecoride.duckdns.org/*"
     ],
     "webOrigins": [
       "http://localhost:8000",
       "http://127.0.0.1:8000",
-      "http://localhost"
+      "http://localhost",
+      "http://ecoride.duckdns.org"
     ],
     "standardFlowEnabled": true
   }' || echo "   Cliente 'ecoride-app' ya existe o se actualizó."
